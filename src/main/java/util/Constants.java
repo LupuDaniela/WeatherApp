@@ -1,3 +1,5 @@
+package util;
+
 public final class Constants{
     public static final String API_KEY="6e05c92312264726834130854242812";
     public static final String API_BASE_URL = "http://api.weatherapi.com/v1/current.json";
