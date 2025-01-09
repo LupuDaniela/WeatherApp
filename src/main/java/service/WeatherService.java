@@ -23,10 +23,10 @@ public class WeatherService {
 public WeatherData getWeatherData(Location location) throws Exception {
     String url;
     if (location.getName() != null && !location.getName().isEmpty()) {
-        // Search by location name
+
         url = String.format("%s?city=%s&key=%s", WEATHER_URL, location.getName(), API_KEY);
     } else {
-        // Search by coordinates
+
         url = String.format("%s?lat=%.2f&lon=%.2f&key=%s", WEATHER_URL,
                 location.getLatitude(), location.getLongitude(), API_KEY);
     }

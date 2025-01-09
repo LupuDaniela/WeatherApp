@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class DatabaseService {
     private static final Logger logger = Logger.getLogger(DatabaseService.class.getName());
@@ -82,28 +83,27 @@ public class DatabaseService {
 
 
 
-    public List<Location> findNearbyLocations(double lat, double lon, double radiusKm) {
-        List<Location> locations = new ArrayList<>();
-        try (PreparedStatement stmt = connection.prepareStatement(
-                "SELECT * FROM locations")) {
-            ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                Location loc = new Location(
-                        rs.getString("name"),
-                        rs.getDouble("latitude"),
-                        rs.getDouble("longitude")
-                );
-
-                if (calculateDistance(lat, lon, loc.getLatitude(), loc.getLongitude()) <= radiusKm) {
-                    locations.add(loc);
-                }
-            }
-        } catch (SQLException e) {
-            logger.severe("Error finding locations: " + e.getMessage());
+public List<Location> findNearbyLocations(double lat, double lon, double radiusKm) {
+    List<Location> locations = new ArrayList<>();
+    try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM locations")) {
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            locations.add(new Location(
+                    rs.getString("name"),
+                    rs.getDouble("latitude"),
+                    rs.getDouble("longitude")
+            ));
         }
-        return locations;
+    } catch (SQLException e) {
+        logger.severe("Error finding locations: " + e.getMessage());
     }
+
+    return locations.stream()
+            .filter(loc -> calculateDistance(lat, lon, loc.getLatitude(), loc.getLongitude()) <= radiusKm)
+            .collect(Collectors.toList());
+}
+
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         double R = 6371;
@@ -245,6 +245,17 @@ public class DatabaseService {
         }
     }
 
+    public void saveLocation(Location location) {
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "INSERT INTO locations (name, latitude, longitude) VALUES (?, ?, ?) ON CONFLICT DO NOTHING")) {
+            stmt.setString(1, location.getName());
+            stmt.setDouble(2, location.getLatitude());
+            stmt.setDouble(3, location.getLongitude());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.severe("Error saving location: " + e.getMessage());
+        }
+    }
 
 
 

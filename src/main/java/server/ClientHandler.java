@@ -63,6 +63,7 @@ public class ClientHandler implements Runnable {
         } else if (request instanceof UpdateCoordinatesRequest) {
             if (isAdmin()) {
                 handleUpdateCoordinates((UpdateCoordinatesRequest) request);
+                handleJsonImport((JsonImportRequest) request);
             } else {
                 output.writeObject(new Response<>(false, null, "Unauthorized: Admin privileges required"));
             }
@@ -144,6 +145,20 @@ public class ClientHandler implements Runnable {
             output.writeObject(new Response<>(false, null, "Failed to update coordinates: " + e.getMessage()));
         }
     }
+
+    private void handleJsonImport(JsonImportRequest request) throws IOException {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<Location> locations = objectMapper.readValue(request.getJsonData(), new TypeReference<>() {});
+            for (Location location : locations) {
+                databaseService.saveLocation(location);
+            }
+            output.writeObject(new Response<>(true, null, "JSON data imported successfully"));
+        } catch (Exception e) {
+            output.writeObject(new Response<>(false, null, "Failed to import JSON data: " + e.getMessage()));
+        }
+    }
+
 
     private void close() {
         try {

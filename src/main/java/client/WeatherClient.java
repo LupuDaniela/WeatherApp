@@ -3,10 +3,7 @@ import model.DailyForecast;
 import model.Location;
 import model.UserRole;
 import model.WeatherData;
-import request.LoginRequest;
-import request.RegisterRequest;
-import request.UpdateCoordinatesRequest;
-import request.WeatherRequest;
+import request.*;
 import response.Response;
 
 import javax.swing.*;
@@ -15,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 public class WeatherClient {
     private Socket socket;
@@ -179,7 +178,26 @@ public class WeatherClient {
 
     frame.getContentPane().add(panel, BorderLayout.CENTER);
     frame.setVisible(true);
-}
+
+        if ("ADMIN".equals(currentUserRole)) {
+            JButton uploadJsonButton = new JButton("Upload JSON Data");
+            uploadJsonButton.addActionListener(e -> {
+                JFileChooser fileChooser = new JFileChooser();
+                int result = fileChooser.showOpenDialog(frame);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    try {
+                        String jsonData = new String(Files.readAllBytes(selectedFile.toPath()), StandardCharsets.UTF_8);
+                        sendRequest(new JsonImportRequest(jsonData));
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(frame, "Failed to read file!", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            });
+            panel.add(uploadJsonButton);
+        }
+
+    }
 
 
 
