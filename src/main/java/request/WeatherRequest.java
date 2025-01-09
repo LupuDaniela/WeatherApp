@@ -1,12 +1,18 @@
 package request;
 
-import java.io.*;
-import lombok.*;
 import model.Location;
 
-@Getter
-@AllArgsConstructor
+import java.io.Serializable;
 
-public class WeatherRequest implements Serializable{
+public class WeatherRequest implements Serializable {
     private Location location;
+
+    public WeatherRequest(Location location) {
+        this.location = location;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
 }
+
